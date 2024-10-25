@@ -1,0 +1,117 @@
+substitutions:
+  # https://esphome.io/guides/configuration-types.html#substitutions
+  device_name: bulb_wyze_color
+
+external_components:
+  # use components from github
+  - source:
+      type: git
+      url: https://github.com/dbcala/wyzeRGBW.git
+      ref: main
+    components: [ wyzeRGBW ]
+
+esphome:
+  # https://esphome.io/components/esphome
+  name: ${device_name}
+  on_boot:
+    priority: 700.0
+    then:
+      - light.turn_on: 
+          id: ${device_name}
+          color_temperature: 3200 K
+  min_version: 2024.6.0
+  name_add_mac_suffix: false
+  project:
+    name: esphome.web
+    version: dev
+
+esp32:
+  # https://esphome.io/components/esp32
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow Over-The-Air updates
+ota:
+- platform: esphome
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  # Set up a wifi access point
+  ap: {}
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://esphome/example-configs/esphome-web/esp32.yaml@main
+  import_full_config: true
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# To have a "next url" for improv serial
+web_server:
+
+
+output:
+  - platform: ledc
+    # https://esphome.io/components/output/ledc.html
+    id: output_red
+    pin: GPIO14
+    frequency: 1220Hz
+    power_supply: rgb_power
+    max_power: 0.85
+  - platform: ledc
+    # https://esphome.io/components/output/ledc.html
+    id: output_green
+    pin: GPIO26
+    frequency: 1220Hz
+    power_supply: rgb_power
+    max_power: 0.85
+  - platform: ledc
+    # https://esphome.io/components/output/ledc.html
+    id: output_blue
+    pin: GPIO13
+    frequency: 1220Hz
+    power_supply: rgb_power
+    max_power: 0.80
+  - platform: ledc
+    # https://esphome.io/components/output/ledc.html  
+    id: output_white  
+    pin: GPIO15
+    frequency: 1220Hz
+    # power_supply: rgb_power
+    max_power: 0.80
+
+power_supply:
+  # https://esphome.io/components/power_supply.html
+  - id: rgb_power
+    pin: GPIO23
+
+light:
+  # https://esphome.io/components/light/index.html
+  - platform: wyzeRGBW
+    id: ${device_name}
+    name: ${device_name}
+    cold_white_color_temperature: "6666.6 K"
+    warm_white_color_temperature: "2000 K"
+    # I personally use 6666.6K and 2500k to base automations on 150-400 mired values, but 7000/2700k are the listed numbers from Wyze
+    red: output_red
+    green: output_green
+    blue: output_blue
+    white: output_white
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0.5s
+    # effects: .....

@@ -1,0 +1,134 @@
+substitutions:
+  name: esphome-web-09a934
+  friendly_name: ESP Light 1
+  device_number: "1"
+  deviceid: "light_${device_number}"
+  esphomename: "light-${device_number}" # underscore in hostname is discouraged
+  devicename: "Light ${device_number}"
+
+
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  on_boot:
+    priority: 600
+    then:
+    - light.turn_on:
+        id: ${deviceid}
+        brightness: 100%
+        color_brightness: 100%
+        red: 100%
+        green: 70%
+        blue: 0%
+        white: 100%
+        transition_length: 0.35s
+  min_version: 2024.6.0
+  name_add_mac_suffix: false
+  project:
+    name: esphome.web
+    version: dev
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow Over-The-Air updates
+ota:
+- platform: esphome
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  # Set up a wifi access point
+  ap: {}
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://esphome/example-configs/esphome-web/esp32.yaml@main
+  import_full_config: true
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# To have a "next url" for improv serial
+web_server:
+
+
+#####
+
+switch:
+  - platform: restart
+    name: "${devicename} Restart"
+
+output:
+  - platform: ledc
+    id: output_red
+    pin: GPIO14
+    frequency: "600Hz"
+    max_power: 0.85
+    power_supply: rgb_power
+  - platform: ledc
+    id: output_green
+    pin: GPIO26
+    frequency: "600Hz"
+    max_power: 0.85
+    power_supply: rgb_power
+  - platform: ledc
+    id: output_blue
+    pin: GPIO13
+    frequency: "600Hz"
+    max_power: 0.85
+    power_supply: rgb_power
+  - platform: ledc
+    id: output_white
+    pin: GPIO15
+    frequency: "600Hz"
+    max_power: 0.85
+
+binary_sensor:
+  - platform: gpio
+    id: input_unknown_1
+    pin:
+      number: GPIO2
+      mode: INPUT_OUTPUT_OPEN_DRAIN
+    internal: true
+  - platform: gpio
+    id: input_unknown_2
+    name: "${devicename} Power Supply"
+    pin:
+      number: GPIO27
+      mode: 
+        input: true
+        pullup: true
+    internal: true
+
+
+power_supply:
+  - id: rgb_power
+    pin: GPIO23
+    enable_time: 0ms
+    keep_on_time: 2s
+
+light:
+  - platform: rgbw
+    name: ${devicename}
+    id: ${deviceid}
+    red: output_red
+    green: output_green
+    blue: output_blue
+    white: output_white
+    default_transition_length: 0.25s
